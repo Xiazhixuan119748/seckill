@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.seckill.common.domain.mapper.SeckillOrderSendCompensationDOMapper">
+  <resultMap id="BaseResultMap" type="com.seckill.common.domain.dataobject.SeckillOrderSendCompensationDO">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="order_no" jdbcType="VARCHAR" property="orderNo" />
+    <result column="user_id" jdbcType="BIGINT" property="userId" />
+    <result column="activity_id" jdbcType="BIGINT" property="activityId" />
+    <result column="goods_id" jdbcType="BIGINT" property="goodsId" />
+    <result column="seckill_goods_id" jdbcType="BIGINT" property="seckillGoodsId" />
+    <result column="status" jdbcType="TINYINT" property="status" />
+    <result column="retry_count" jdbcType="INTEGER" property="retryCount" />
+    <result column="fail_reason" jdbcType="VARCHAR" property="failReason" />
+    <result column="next_retry_time" jdbcType="TIMESTAMP" property="nextRetryTime" />
+    <result column="is_deleted" jdbcType="TINYINT" property="isDeleted" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+  </resultMap>
+  <resultMap extends="BaseResultMap" id="ResultMapWithBLOBs" type="com.seckill.common.domain.dataobject.SeckillOrderSendCompensationDO">
+    <result column="message_body" jdbcType="LONGVARCHAR" property="messageBody" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, order_no, user_id, activity_id, goods_id, seckill_goods_id, `status`, retry_count, 
+    fail_reason, next_retry_time, is_deleted, create_time, update_time
+  </sql>
+  <sql id="Blob_Column_List">
+    message_body
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="ResultMapWithBLOBs">
+    select 
+    <include refid="Base_Column_List" />
+    ,
+    <include refid="Blob_Column_List" />
+    from t_seckill_order_send_compensation
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+
+  <!-- 按订单号查询补偿记录 -->
+  <select id="selectByOrderNo" resultMap="BaseResultMap">
+    SELECT
+    <include refid="Base_Column_List"/>
+    FROM t_seckill_order_send_compensation
+    WHERE order_no = #{orderNo} AND is_deleted = 0
+  </select>
+
+  <!-- 查询可重发的待重试记录 -->
+  <select id="selectPendingList" resultMap="ResultMapWithBLOBs">
+    SELECT
+    <include refid="Base_Column_List" />
+    ,
+    <include refid="Blob_Column_List" />
+    FROM t_seckill_order_send_compensation
+    WHERE status = 0 AND is_deleted = 0 AND next_retry_time &lt;= #{now}
+    ORDER BY next_retry_time ASC
+    LIMIT #{limit}
+  </select>
+
+  <!-- 按订单号更新补偿状态 -->
+  <update id="updateStatusByOrderNo">
+    UPDATE t_seckill_order_send_compensation
+    SET status = #{status}
+    WHERE order_no = #{orderNo} AND is_deleted = 0
+  </update>
+
+  <!-- 按订单号更新重试计划 -->
+  <update id="updateRetryPlan">
+    UPDATE t_seckill_order_send_compensation
+    SET retry_count = #{retryCount}, next_retry_time = #{nextRetryTime}, fail_reason = #{failReason}
+    WHERE order_no = #{orderNo} AND is_deleted = 0
+  </update>
+
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from t_seckill_order_send_compensation
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+  <insert id="insert" parameterType="com.seckill.common.domain.dataobject.SeckillOrderSendCompensationDO">
+    insert into t_seckill_order_send_compensation (order_no, user_id,
+      activity_id, goods_id, seckill_goods_id, 
+      `status`, retry_count, fail_reason, 
+      next_retry_time, is_deleted, create_time, 
+      update_time, message_body)
+    values (#{orderNo,jdbcType=VARCHAR}, #{userId,jdbcType=BIGINT},
+      #{activityId,jdbcType=BIGINT}, #{goodsId,jdbcType=BIGINT}, #{seckillGoodsId,jdbcType=BIGINT}, 
+      #{status,jdbcType=TINYINT}, #{retryCount,jdbcType=INTEGER}, #{failReason,jdbcType=VARCHAR}, 
+      #{nextRetryTime,jdbcType=TIMESTAMP}, 0, now(),
+      now(), #{messageBody,jdbcType=LONGVARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.seckill.common.domain.dataobject.SeckillOrderSendCompensationDO">
+    insert into t_seckill_order_send_compensation
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        id,
+      </if>
+      <if test="orderNo != null">
+        order_no,
+      </if>
+      <if test="userId != null">
+        user_id,
+      </if>
+      <if test="activityId != null">
+        activity_id,
+      </if>
+      <if test="goodsId != null">
+        goods_id,
+      </if>
+      <if test="seckillGoodsId != null">
+        seckill_goods_id,
+      </if>
+      <if test="status != null">
+        `status`,
+      </if>
+      <if test="retryCount != null">
+        retry_count,
+      </if>
+      <if test="failReason != null">
+        fail_reason,
+      </if>
+      <if test="nextRetryTime != null">
+        next_retry_time,
+      </if>
+      <if test="isDeleted != null">
+        is_deleted,
+      </if>
+      <if test="createTime != null">
+        create_time,
+      </if>
+      <if test="updateTime != null">
+        update_time,
+      </if>
+      <if test="messageBody != null">
+        message_body,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=BIGINT},
+      </if>
+      <if test="orderNo != null">
+        #{orderNo,jdbcType=VARCHAR},
+      </if>
+      <if test="userId != null">
+        #{userId,jdbcType=BIGINT},
+      </if>
+      <if test="activityId != null">
+        #{activityId,jdbcType=BIGINT},
+      </if>
+      <if test="goodsId != null">
+        #{goodsId,jdbcType=BIGINT},
+      </if>
+      <if test="seckillGoodsId != null">
+        #{seckillGoodsId,jdbcType=BIGINT},
+      </if>
+      <if test="status != null">
+        #{status,jdbcType=TINYINT},
+      </if>
+      <if test="retryCount != null">
+        #{retryCount,jdbcType=INTEGER},
+      </if>
+      <if test="failReason != null">
+        #{failReason,jdbcType=VARCHAR},
+      </if>
+      <if test="nextRetryTime != null">
+        #{nextRetryTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="isDeleted != null">
+        #{isDeleted,jdbcType=TINYINT},
+      </if>
+      <if test="createTime != null">
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateTime != null">
+        #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="messageBody != null">
+        #{messageBody,jdbcType=LONGVARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.seckill.common.domain.dataobject.SeckillOrderSendCompensationDO">
+    update t_seckill_order_send_compensation
+    <set>
+      <if test="orderNo != null">
+        order_no = #{orderNo,jdbcType=VARCHAR},
+      </if>
+      <if test="userId != null">
+        user_id = #{userId,jdbcType=BIGINT},
+      </if>
+      <if test="activityId != null">
+        activity_id = #{activityId,jdbcType=BIGINT},
+      </if>
+      <if test="goodsId != null">
+        goods_id = #{goodsId,jdbcType=BIGINT},
+      </if>
+      <if test="seckillGoodsId != null">
+        seckill_goods_id = #{seckillGoodsId,jdbcType=BIGINT},
+      </if>
+      <if test="status != null">
+        `status` = #{status,jdbcType=TINYINT},
+      </if>
+      <if test="retryCount != null">
+        retry_count = #{retryCount,jdbcType=INTEGER},
+      </if>
+      <if test="failReason != null">
+        fail_reason = #{failReason,jdbcType=VARCHAR},
+      </if>
+      <if test="nextRetryTime != null">
+        next_retry_time = #{nextRetryTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="isDeleted != null">
+        is_deleted = #{isDeleted,jdbcType=TINYINT},
+      </if>
+      <if test="createTime != null">
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateTime != null">
+        update_time = #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="messageBody != null">
+        message_body = #{messageBody,jdbcType=LONGVARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+  <update id="updateByPrimaryKeyWithBLOBs" parameterType="com.seckill.common.domain.dataobject.SeckillOrderSendCompensationDO">
+    update t_seckill_order_send_compensation
+    set order_no = #{orderNo,jdbcType=VARCHAR},
+      user_id = #{userId,jdbcType=BIGINT},
+      activity_id = #{activityId,jdbcType=BIGINT},
+      goods_id = #{goodsId,jdbcType=BIGINT},
+      seckill_goods_id = #{seckillGoodsId,jdbcType=BIGINT},
+      `status` = #{status,jdbcType=TINYINT},
+      retry_count = #{retryCount,jdbcType=INTEGER},
+      fail_reason = #{failReason,jdbcType=VARCHAR},
+      next_retry_time = #{nextRetryTime,jdbcType=TIMESTAMP},
+      is_deleted = #{isDeleted,jdbcType=TINYINT},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      update_time = #{updateTime,jdbcType=TIMESTAMP},
+      message_body = #{messageBody,jdbcType=LONGVARCHAR}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.seckill.common.domain.dataobject.SeckillOrderSendCompensationDO">
+    update t_seckill_order_send_compensation
+    set order_no = #{orderNo,jdbcType=VARCHAR},
+      user_id = #{userId,jdbcType=BIGINT},
+      activity_id = #{activityId,jdbcType=BIGINT},
+      goods_id = #{goodsId,jdbcType=BIGINT},
+      seckill_goods_id = #{seckillGoodsId,jdbcType=BIGINT},
+      `status` = #{status,jdbcType=TINYINT},
+      retry_count = #{retryCount,jdbcType=INTEGER},
+      fail_reason = #{failReason,jdbcType=VARCHAR},
+      next_retry_time = #{nextRetryTime,jdbcType=TIMESTAMP},
+      is_deleted = #{isDeleted,jdbcType=TINYINT},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      update_time = #{updateTime,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+</mapper>

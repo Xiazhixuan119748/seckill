@@ -1,0 +1,212 @@
+package com.seckill.common.constant;
+
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.Objects;
+
+/**
+ * @Author: 犬小哈
+ * @Date: 2026/5/25 21:11
+ * @Version: v1.0.0
+ * @Description: Redis 缓存 Key 常量类
+ **/
+public class RedisKeyConstants {
+
+    /**
+     * 商品列表缓存 Key 前缀
+     *
+     * 完整格式：seckill:goods:list:{activityId}
+     */
+    public static final String GOODS_LIST_PREFIX = "seckill:goods:list:";
+
+    /**
+     * 商品详情缓存 Key 前缀
+     *
+     * 完整格式：seckill:goods:detail:{activityId}:{goodsId}
+     */
+    public static final String GOODS_DETAIL_PREFIX = "seckill:goods:detail:";
+
+    /**
+     * 活动结束后，缓存保留的短过期时间（单位：分钟）
+     * 防止活动结束后仍有余温流量，每次都打到 DB
+     */
+    public static final long ENDED_ACTIVITY_TTL_MINUTES = 5;
+
+    /**
+     * 安全缓冲时间（单位：秒）
+     */
+    public static final long SAFETY_BUFFER_SECONDS = 30 * 60; // 30 分钟
+
+    /**
+     * 缓存空值，用于防止缓存穿透
+     */
+    public static final String NULL_CACHE_VALUE = "NULL";
+
+    /**
+     * 缓存空值的过期时间（单位：分钟）
+     */
+    public static final long NULL_CACHE_TTL_MINUTES = 5;
+
+    /**
+     * 活动布隆过滤器 Key
+     */
+    public static final String SECKILL_ACTIVITY_BLOOM_KEY = "seckill:bloom:activity";
+
+    /**
+     * 商品布隆过滤器 Key
+     */
+    public static final String SECKILL_GOODS_BLOOM_KEY = "seckill:bloom:goods";
+
+    /**
+     * 秒杀订单处理状态 Key 前缀
+     *
+     */
+    public static final String SECKILL_ORDER_STATUS_PREFIX = "seckill:order:status:";
+
+    /**
+     * 秒杀订单处理状态过期时间（单位：分钟）
+     */
+    public static final long SECKILL_ORDER_STATUS_TTL_MINUTES = 30;
+
+    /**
+     * 秒杀库存 Key 前缀
+     */
+    public static final String SECKILL_STOCK_PREFIX = "seckill:stock:";
+
+    /**
+     * 秒杀用户购买标记 Key 前缀
+     */
+    public static final String SECKILL_USER_ORDER_PREFIX = "seckill:user:order:";
+
+    /**
+     * 秒杀活动商品元数据 Key 前缀
+     */
+    public static final String SECKILL_ACTIVITY_GOODS_META_PREFIX = "seckill:activity:goods:meta:";
+
+    /**
+     * 秒杀订单待回补上下文 Key 前缀
+     */
+    public static final String SECKILL_ORDER_COMPENSATION_PREFIX = "seckill:order:compensation:";
+
+    /**
+     * 秒杀商品售罄标记 Key 前缀
+     */
+    public static final String SECKILL_SOLD_OUT_PREFIX = "seckill:soldout:";
+
+    /**
+     * 秒杀用户维度限流 Key 前缀
+     */
+    public static final String SECKILL_RATE_LIMIT_USER_PREFIX = "seckill:rate:user:";
+
+    /**
+     * 秒杀 IP 维度限流 Key 前缀
+     */
+    public static final String SECKILL_RATE_LIMIT_IP_PREFIX = "seckill:rate:ip:";
+
+    /**
+     * 秒杀下单令牌 Key 前缀
+     */
+    public static final String SECKILL_ORDER_TOKEN_PREFIX = "seckill:order:token:";
+
+    /**
+     * 秒杀下单令牌过期时间（单位：秒）
+     */
+    public static final long SECKILL_ORDER_TOKEN_TTL_SECONDS = 60;
+
+    /**
+     * 秒杀令牌大闸 Key 前缀
+     */
+    public static final String SECKILL_TOKEN_GATE_PREFIX = "seckill:token:gate:";
+
+    /**
+     * 活动缓存预热分布式锁 Key
+     */
+    public static final String SECKILL_ACTIVITY_PREHEAT_LOCK_KEY = "seckill:lock:activity:preheat";
+
+    /**
+     * 构建活动缓存预热分布式锁 Key
+     */
+    public static String buildSeckillActivityPreheatLockKey() {
+        return SECKILL_ACTIVITY_PREHEAT_LOCK_KEY;
+    }
+
+    /**
+     * 构建秒杀令牌大闸 Key
+     */
+    public static String buildSeckillTokenGateKey(Long activityId, Long goodsId) {
+        return SECKILL_TOKEN_GATE_PREFIX + activityId + ":" + goodsId;
+    }
+
+    /**
+     * 构建秒杀下单令牌 Key
+     */
+    public static String buildSeckillOrderTokenKey(Long activityId, Long goodsId, Long userId) {
+        return SECKILL_ORDER_TOKEN_PREFIX + activityId + ":" + goodsId + ":" + userId;
+    }
+
+    /**
+     * 构建秒杀用户维度限流 Key
+     */
+    public static String buildSeckillRateLimitUserKey(Long activityId, Long goodsId, Long userId) {
+        return SECKILL_RATE_LIMIT_USER_PREFIX + activityId + ":" + goodsId + ":" + userId;
+    }
+
+    /**
+     * 构建秒杀 IP 维度限流 Key
+     */
+    public static String buildSeckillRateLimitIpKey(Long activityId, Long goodsId, String clientIp) {
+        return SECKILL_RATE_LIMIT_IP_PREFIX + activityId + ":" + goodsId + ":" + clientIp;
+    }
+
+    /**
+     * 构建秒杀商品售罄标记 Key
+     */
+    public static String buildSeckillSoldOutKey(Long activityId, Long goodsId) {
+        return SECKILL_SOLD_OUT_PREFIX + activityId + ":" + goodsId;
+    }
+
+    /**
+     * 构建秒杀订单待回补上下文 Key
+     */
+    public static String buildSeckillOrderCompensationKey(String orderNo) {
+        return SECKILL_ORDER_COMPENSATION_PREFIX + orderNo;
+    }
+
+    /**
+     * 构建秒杀活动商品元数据 Key
+     */
+    public static String buildSeckillActivityGoodsMetaKey(Long activityId, Long goodsId) {
+        return SECKILL_ACTIVITY_GOODS_META_PREFIX + activityId + ":" + goodsId;
+    }
+
+    /**
+     * 构建秒杀用户购买标记 Key
+     */
+    public static String buildSeckillUserOrderKey(Long activityId, Long goodsId, Long userId) {
+        return SECKILL_USER_ORDER_PREFIX + activityId + ":" + goodsId + ":" + userId;
+    }
+
+    /**
+     * 构建秒杀库存 Key
+     */
+    public static String buildSeckillStockKey(Long activityId, Long goodsId) {
+        return SECKILL_STOCK_PREFIX + activityId + ":" + goodsId;
+    }
+
+    /**
+     * 根据活动结束时间动态计算缓存 TTL（秒）
+     *
+     * 公式：TTL = (活动结束时间 - 当前时间) + 安全缓冲时间
+     *
+     * @param endTime
+     * @return
+     */
+    public static Long calculateTtlSeconds(LocalDateTime endTime) {
+        if (Objects.isNull(endTime)) {
+            return null;
+        }
+        long ttlSeconds = Duration.between(LocalDateTime.now(), endTime).getSeconds()
+                + SAFETY_BUFFER_SECONDS;
+        return ttlSeconds > 0 ? ttlSeconds : null;
+    }
+}
